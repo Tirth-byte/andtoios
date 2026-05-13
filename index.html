@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Android → iPhone Migration</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#ffffff;--bg2:#f7f6f3;--bg3:#efede9;
+  --border:#e9e7e3;--border2:#d4d0c8;
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#aaa;
+  --accent:#2563eb;--accent-bg:#eff6ff;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-bd:#bbf7d0;
+  --amber:#b45309;--amber-bg:#fffbeb;--amber-bd:#fde68a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-bd:#fecaca;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  --r:8px;--rl:12px;
+  --font:'Inter',-apple-system,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(255,255,255,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;gap:0}
+.nav-logo{font-size:14px;font-weight:600;color:var(--text);margin-right:24px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.nav-logo span{color:var(--accent)}
+.nav-tabs{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.ntab{padding:5px 12px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:none;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.ntab:hover{background:var(--bg2);color:var(--text)}
+.ntab.active{background:var(--bg3);color:var(--text)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0;padding-left:12px}
+.btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg);color:var(--text2);font-family:var(--font);transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:hover{background:var(--bg2);color:var(--text)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#1d4ed8;color:#fff}
+.saved{font-size:12px;color:var(--green);font-weight:500;opacity:0;transition:opacity .3s;white-space:nowrap}
+.saved.show{opacity:1}
+
+/* PAGES */
+.page{display:none;max-width:980px;margin:0 auto;padding:32px 24px 80px}
+.page.active{display:block}
+.page-hdr{margin-bottom:28px}
+.page-hdr h1{font-size:24px;font-weight:600;letter-spacing:-.3px;margin-bottom:3px}
+.page-hdr p{font-size:13px;color:var(--text2)}
+
+/* PROGRESS HERO */
+.hero{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:22px 26px;margin-bottom:24px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.pbar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0 5px}
+.pfill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1);width:0%}
+.pmeta{font-size:12px;color:var(--text3)}
+.pstats{display:flex;flex-direction:column;gap:7px;min-width:155px}
+.pstat{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pstat-l{font-size:12px;color:var(--text2)}
+.pstat-v{font-family:var(--mono);font-size:12px;font-weight:500}
+
+/* STAT ROW */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.scard{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.scard-n{font-size:22px;font-weight:600;font-family:var(--mono)}
+.scard-l{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* CHECKLIST CARDS */
+.sl{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:11px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.sc{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:box-shadow .15s}
+.sc:hover{box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.sc.critical{border-left:3px solid var(--red)}
+.sch{display:flex;align-items:center;gap:10px;padding:13px 15px;cursor:pointer}
+.sch:hover{background:var(--bg2)}
+.sico{width:31px;height:31px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sinf{flex:1;min-width:0}
+.sname{font-size:13px;font-weight:600}
+.sprog{font-size:11px;color:var(--text3);margin-top:1px}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.bd{background:var(--green-bg);color:var(--green)}
+.bp{background:var(--amber-bg);color:var(--amber)}
+.bt{background:var(--bg2);color:var(--text3)}
+.bc{background:var(--red-bg);color:var(--red)}
+.chev{font-size:11px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+.sc.open .chev{transform:rotate(180deg)}
+.mbar{height:3px;background:var(--bg3)}
+.mbfill{height:100%;background:var(--accent);transition:width .3s}
+.sbody{display:none;padding:13px 15px;border-top:1px solid var(--border)}
+.sc.open .sbody{display:block}
+.abox{border-radius:6px;padding:8px 11px;margin-bottom:11px;font-size:12px;line-height:1.6;display:flex;gap:7px}
+.aw{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.ac{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.ci{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)}
+.ci:last-child{border-bottom:none}
+.ci input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;margin-top:2px}
+.ci label{font-size:12px;cursor:pointer;transition:color .15s}
+.ci.done label{color:var(--text3);text-decoration:line-through}
+
+/* FINAL GATE */
+.fgate{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:22px 26px}
+.fgate h2{font-size:15px;font-weight:600;margin-bottom:3px}
+.fstatus{font-size:13px;padding:9px 13px;border-radius:var(--r);margin:12px 0 16px;border:1px solid var(--border);background:var(--bg);color:var(--text2)}
+.fstatus.ready{background:var(--green-bg);color:var(--green);border-color:var(--green-bd)}
+.fcg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.fci{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:6px}
+.fci.done{background:var(--green-bg);border-color:var(--green-bd)}
+.fci input[type=checkbox]{width:13px;height:13px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.fci label{font-size:11px;cursor:pointer}
+.fci.done label{color:var(--green)}
+
+/* ── VAULT ── */
+.vsec{margin-bottom:32px}
+.vsech{display:flex;align-items:center;gap:10px;margin-bottom:13px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.vsech h2{font-size:15px;font-weight:600;flex:1}
+.vico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.twrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:11px;overflow-x:auto}
+table.ct{width:100%;border-collapse:collapse;min-width:600px}
+table.ct thead th{background:var(--bg2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+table.ct tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+table.ct tbody tr:last-child{border-bottom:none}
+table.ct tbody tr:hover{background:var(--bg2)}
+table.ct td{padding:9px 13px;vertical-align:middle;font-size:13px}
+.ctag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:12px}
+.tag-email{background:var(--accent-bg);color:var(--accent)}
+.tag-app{background:var(--purple-bg);color:var(--purple)}
+.tag-bank{background:var(--red-bg);color:var(--red)}
+.tag-college{background:var(--amber-bg);color:var(--amber)}
+.tag-social{background:var(--green-bg);color:var(--green)}
+.pwdf{display:flex;align-items:center;gap:6px}
+.pwdt{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--text3)}
+.pwdt.rev{letter-spacing:normal;color:var(--text)}
+.eye{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px;border-radius:4px;transition:color .15s;line-height:1}
+.eye:hover{color:var(--text)}
+.cpb{background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:10px;font-family:var(--font);color:var(--text2);padding:2px 7px;transition:all .15s;white-space:nowrap}
+.cpb:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cpb.ok{background:var(--green);color:#fff;border-color:var(--green)}
+.dlb{background:none;border:none;cursor:pointer;color:var(--text3);font-size:17px;padding:1px 4px;border-radius:4px;transition:color .15s;line-height:1}
+.dlb:hover{color:var(--red)}
+.erow td{text-align:center;padding:22px;color:var(--text3);font-size:13px}
+.ncell{font-size:11px;color:var(--text3);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ADD FORM */
+.aform{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:15px 17px}
+.aftitle{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:11px;text-transform:uppercase;letter-spacing:.06em}
+.frow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
+.flbl{font-size:11px;font-weight:500;color:var(--text2)}
+.finp{height:33px;border:1px solid var(--border2);border-radius:6px;padding:0 9px;font-size:12px;font-family:var(--font);background:var(--bg);color:var(--text);outline:none;width:100%;transition:border-color .15s}
+.finp:focus{border-color:var(--accent)}
+.fsel{height:33px;border:1px solid var(--border2);border-radius:6px;padding:0 7px;font-size:12px;font-family:var(--font);background:var(--bg);color:var(--text);outline:none;cursor:pointer;width:100%}
+.fsel:focus{border-color:var(--accent)}
+.hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+/* SCREENSHOTS */
+.sszone{border:2px dashed var(--border2);border-radius:var(--rl);padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.sszone:hover,.sszone.drag{border-color:var(--accent);background:var(--accent-bg)}
+.sszone p{font-size:14px;color:var(--text2);margin-bottom:4px}
+.sszone span{font-size:12px;color:var(--text3)}
+.ssgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:16px}
+.sscard{background:var(--bg);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;position:relative}
+.sscard img{width:100%;display:block;object-fit:cover;max-height:190px;cursor:zoom-in;background:var(--bg2)}
+.sscbody{padding:9px 11px}
+.sscname{font-size:12px;font-weight:600;margin-bottom:2px}
+.sscnote{font-size:11px;color:var(--text3)}
+.ssdel{position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.55);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;padding:2px 6px;opacity:0;transition:opacity .15s}
+.sscard:hover .ssdel{opacity:1}
+.ssmform{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px 16px;margin-top:12px;display:none}
+.ssmform.show{display:block}
+
+/* LIGHTBOX */
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;align-items:center;justify-content:center;padding:20px}
+.lb.show{display:flex}
+.lb img{max-width:90vw;max-height:90vh;border-radius:var(--rl);object-fit:contain}
+.lbclose{position:fixed;top:18px;right:22px;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;line-height:1}
+
+@media(max-width:700px){
+  .cgrid,.fcg,.srow{grid-template-columns:1fr}
+  .ssgrid{grid-template-columns:1fr 1fr}
+  .hero{grid-template-columns:1fr}
+  nav{padding:0 14px}
+  .page{padding:18px 14px 60px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">📱 Migration <span>Dashboard</span></div>
+  <div class="nav-tabs">
+    <button class="ntab active" onclick="showPage('checklist')">✅ Checklist</button>
+    <button class="ntab" onclick="showPage('emails')">📧 Email vault</button>
+    <button class="ntab" onclick="showPage('apps')">📱 App vault</button>
+    <button class="ntab" onclick="showPage('screenshots')">🖼️ Screenshots</button>
+    <button class="ntab" onclick="showPage('sync')">☁️ Sync</button>
+  </div>
+  <div class="nav-right">
+    <span class="saved" id="saved-toast">✓ Saved</span>
+    <button class="btn" onclick="resetAll()">↺ Reset all</button>
+    <button class="btn" onclick="expandAll()">⊞ Expand all</button>
+  </div>
+</nav>
+
+<!-- PAGE: CHECKLIST -->
+<div class="page active" id="page-checklist">
+  <div class="page-hdr">
+    <h1>Android → iPhone migration</h1>
+    <p>Track every step before formatting your Android. All data saved in your browser.</p>
+  </div>
+  <div class="hero">
+    <div style="flex:1">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:2px">Overall progress</div>
+      <div class="pbar"><div class="pfill" id="gfill"></div></div>
+      <div class="pmeta" id="glabel">0 of 43 tasks complete</div>
+    </div>
+    <div class="pstats">
+      <div class="pstat"><span class="pstat-l">Sections done</span><span class="pstat-v" id="secs-stat">0 / 10</span></div>
+      <div class="pstat"><span class="pstat-l">Remaining</span><span class="pstat-v" id="left-stat">43</span></div>
+      <div class="pstat"><span class="pstat-l">Completion</span><span class="pstat-v" id="pct-stat">0%</span></div>
+    </div>
+  </div>
+  <div class="srow">
+    <div class="scard"><div class="scard-n" id="ms-done" style="color:var(--accent)">0</div><div class="scard-l">Done</div></div>
+    <div class="scard"><div class="scard-n" id="ms-left" style="color:var(--amber)">43</div><div class="scard-l">Remaining</div></div>
+    <div class="scard"><div class="scard-n" style="color:var(--red)">3</div><div class="scard-l">Critical sections</div></div>
+    <div class="scard"><div class="scard-n" style="color:var(--text2)">43</div><div class="scard-l">Total tasks</div></div>
+  </div>
+  <div class="sl">Migration sections — click to expand</div>
+  <div class="cgrid" id="cgrid"></div>
+  <div class="sl">Final safety gate</div>
+  <div class="fgate">
+    <h2>🛡️ Safe to format Android?</h2>
+    <p style="font-size:12px;color:var(--text2)">Use both phones together for 7 days before wiping Android.</p>
+    <div class="fstatus" id="fstatus">⚠️ Complete all sections and tick every box below first.</div>
+    <div class="fcg" id="fcg"></div>
+  </div>
+</div>
+
+<!-- PAGE: EMAIL VAULT -->
+<div class="page" id="page-emails">
+  <div class="page-hdr">
+    <h1>📧 Email vault</h1>
+    <p>All your email accounts and passwords in one place. Tap the eye icon to reveal, tap Copy to copy on iPhone.</p>
+  </div>
+  <div class="vsec">
+    <div class="vsech">
+      <div class="vico" style="background:var(--accent-bg)">📧</div>
+      <h2>Email accounts</h2>
+      <span class="badge bt" id="em-badge">0 saved</span>
+    </div>
+    <div class="twrap">
+      <table class="ct">
+        <thead><tr><th>Label</th><th>Email address</th><th>Password</th><th>Recovery</th><th>Type</th><th>Notes</th><th></th></tr></thead>
+        <tbody id="em-tbody"><tr class="erow"><td colspan="7">No emails added yet — use the form below.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="aform">
+      <div class="aftitle">Add email account</div>
+      <div class="frow">
+        <div class="fg" style="min-width:110px;max-width:140px">
+          <label class="flbl">Label</label>
+          <input class="finp" id="em-label" placeholder="Personal Gmail">
+        </div>
+        <div class="fg" style="min-width:160px">
+          <label class="flbl">Email address</label>
+          <input class="finp" id="em-email" placeholder="you@gmail.com">
+        </div>
+        <div class="fg" style="min-width:130px">
+          <label class="flbl">Password</label>
+          <input class="finp" id="em-pwd" placeholder="password">
+        </div>
+        <div class="fg" style="min-width:130px">
+          <label class="flbl">Recovery</label>
+          <input class="finp" id="em-rec" placeholder="recovery email / phone">
+        </div>
+        <div class="fg" style="max-width:110px">
+          <label class="flbl">Type</label>
+          <select class="fsel" id="em-type">
+            <option value="email">Email</option>
+            <option value="college">College</option>
+            <option value="bank">Bank</option>
+            <option value="social">Social</option>
+            <option value="app">Other</option>
+          </select>
+        </div>
+        <div class="fg" style="flex:1;min-width:130px">
+          <label class="flbl">Notes</label>
+          <input class="finp" id="em-notes" placeholder="e.g. 2FA enabled, used for UPI...">
+        </div>
+        <div class="fg" style="flex:0">
+          <label class="flbl">&nbsp;</label>
+          <button class="btn btn-primary" onclick="addEmail()" style="height:33px">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <p class="hint">⚠️ Stored only in your browser's localStorage. Never share this HTML file publicly.</p>
+  </div>
+</div>
+
+<!-- PAGE: APP VAULT -->
+<div class="page" id="page-apps">
+  <div class="page-hdr">
+    <h1>📱 App vault</h1>
+    <p>Essential apps with login credentials. Copy directly from iPhone when setting up.</p>
+  </div>
+  <div class="vsec">
+    <div class="vsech">
+      <div class="vico" style="background:var(--purple-bg)">📱</div>
+      <h2>Apps &amp; services</h2>
+      <span class="badge bt" id="ap-badge">0 saved</span>
+    </div>
+    <div class="twrap">
+      <table class="ct">
+        <thead><tr><th>App</th><th>Login / username</th><th>Password</th><th>Category</th><th>iPhone status</th><th>Notes</th><th></th></tr></thead>
+        <tbody id="ap-tbody"><tr class="erow"><td colspan="7">No apps added yet — use the form below.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="aform">
+      <div class="aftitle">Add app / service</div>
+      <div class="frow">
+        <div class="fg" style="min-width:100px;max-width:130px">
+          <label class="flbl">App name</label>
+          <input class="finp" id="ap-name" placeholder="Instagram">
+        </div>
+        <div class="fg" style="min-width:150px">
+          <label class="flbl">Login / email</label>
+          <input class="finp" id="ap-login" placeholder="you@email.com">
+        </div>
+        <div class="fg" style="min-width:120px">
+          <label class="flbl">Password</label>
+          <input class="finp" id="ap-pwd" placeholder="password">
+        </div>
+        <div class="fg" style="max-width:110px">
+          <label class="flbl">Category</label>
+          <select class="fsel" id="ap-cat">
+            <option value="social">Social</option>
+            <option value="bank">Banking</option>
+            <option value="college">College</option>
+            <option value="email">Email</option>
+            <option value="app">Other</option>
+          </select>
+        </div>
+        <div class="fg" style="max-width:130px">
+          <label class="flbl">iPhone status</label>
+          <select class="fsel" id="ap-status">
+            <option value="pending">Not installed</option>
+            <option value="installed">Installed ✓</option>
+            <option value="loggedin">Logged in ✓</option>
+          </select>
+        </div>
+        <div class="fg" style="flex:1;min-width:130px">
+          <label class="flbl">Notes</label>
+          <input class="finp" id="ap-notes" placeholder="e.g. OTP via Google Auth...">
+        </div>
+        <div class="fg" style="flex:0">
+          <label class="flbl">&nbsp;</label>
+          <button class="btn btn-primary" onclick="addApp()" style="height:33px">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <p class="hint">⚠️ Stored only in your browser's localStorage. Never share this HTML file publicly.</p>
+  </div>
+</div>
+
+<!-- PAGE: SCREENSHOTS -->
+<div class="page" id="page-screenshots">
+  <div class="page-hdr">
+    <h1>🖼️ Screenshots</h1>
+    <p>Upload error screenshots or any reference images. Stored in browser — open on iPhone to view.</p>
+  </div>
+  <div class="sszone" id="dropzone" onclick="document.getElementById('ssfile').click()" ondragover="dov(event)" ondragleave="dol()" ondrop="dod(event)">
+    <p>📎 Click to upload or drag &amp; drop screenshots here</p>
+    <span>JPG · PNG · WebP · GIF — stored locally in your browser</span>
+  </div>
+  <input type="file" id="ssfile" accept="image/*" multiple style="display:none" onchange="handleFiles(event)">
+  <div class="ssmform" id="ss-meta">
+    <div class="aftitle">Name this screenshot</div>
+    <div class="frow">
+      <div class="fg" style="min-width:160px">
+        <label class="flbl">Title</label>
+        <input class="finp" id="ss-title" placeholder="e.g. PhonePe error screen">
+      </div>
+      <div class="fg" style="flex:1">
+        <label class="flbl">Note</label>
+        <input class="finp" id="ss-note" placeholder="e.g. shows linked UPI ID, important settings...">
+      </div>
+      <div class="fg" style="flex:0">
+        <label class="flbl">&nbsp;</label>
+        <button class="btn btn-primary" onclick="saveShot()" style="height:33px">Save</button>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:20px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:600" id="ss-count">0 screenshots</div>
+  <div class="ssgrid" id="ss-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--rl);background:var(--bg2);margin-top:8px">No screenshots yet — upload one above.</div>
+  </div>
+</div>
+
+<!-- PAGE: SYNC -->
+<div class="page" id="page-sync">
+  <div class="page-hdr">
+    <h1>☁️ Sync Data</h1>
+    <p>Export your data from Android and import it to your iPhone.</p>
+  </div>
+  <div class="vsec">
+    <div class="vsech">
+      <div class="vico" style="background:var(--accent-bg)">📤</div>
+      <h2>Export Data (On Android)</h2>
+    </div>
+    <div class="aform" style="margin-bottom:20px">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Copy this code and send it to yourself (e.g. via WhatsApp, Email, or Notes). It contains all your checklists, emails, apps, and screenshots.</p>
+      <textarea id="export-ta" class="finp" style="height:120px;resize:vertical;font-family:var(--mono);font-size:11px" readonly></textarea>
+      <div style="margin-top:10px">
+        <button class="btn btn-primary" onclick="copyExport(this)">Copy Data</button>
+      </div>
+    </div>
+
+    <div class="vsech" style="margin-top:40px">
+      <div class="vico" style="background:var(--green-bg)">📥</div>
+      <h2>Import Data (On iPhone)</h2>
+    </div>
+    <div class="aform">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Paste the code you copied from your Android device here to restore all your migration data.</p>
+      <textarea id="import-ta" class="finp" style="height:120px;resize:vertical;font-family:var(--mono);font-size:11px" placeholder="Paste data code here..."></textarea>
+      <div style="margin-top:10px">
+        <button class="btn btn-primary" onclick="importData()">Import & Replace Data</button>
+      </div>
+      <p class="hint" style="color:var(--red);margin-top:8px">⚠️ Warning: Importing will overwrite any existing data on this browser.</p>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="closeLB()">
+  <button class="lbclose" onclick="closeLB()">✕</button>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<script>
+const SK='mig4';
+let S={};
+function load(){try{S=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){S={}}}
+function persist(){localStorage.setItem(SK,JSON.stringify(S));const t=document.getElementById('saved-toast');t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800)}
+
+// NAV
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const m={checklist:0,emails:1,apps:2,screenshots:3,sync:4};
+  document.querySelectorAll('.ntab')[m[id]].classList.add('active');
+  if(id==='sync'){
+    try {
+      document.getElementById('export-ta').value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+    } catch(e) {
+      document.getElementById('export-ta').value=JSON.stringify(S);
+    }
+  }
+}
+
+// ── CHECKLIST ──────────────────────────────────────────────────
+const SECS=[
+  {id:'gbk',title:'Google backup',e:'☁️',bg:'#eff6ff',bd:'#bfdbfe',
+   al:{t:'w',m:'Enable backup first — contacts, SMS, call history, Wi-Fi passwords & app data.'},
+   items:['Opened Settings → Google → Backup','Enabled Backup by Google One','Photos & videos backup ON','SMS & call history backup ON','Tapped "Back up now" and waited','Backup confirmation screenshot saved']},
+  {id:'ph',title:'Photos & videos',e:'🖼️',bg:'#f0fdf4',bd:'#bbf7d0',
+   al:{t:'w',m:'Do NOT proceed until Google Photos upload shows 100% complete.'},
+   items:['Opened Google Photos → Backup settings','Backup turned ON','Camera photos verified at photos.google.com','Videos verified','Screenshots verified','WhatsApp images verified','Old albums verified']},
+  {id:'wa',title:'WhatsApp transfer',e:'💬',bg:'#fef2f2',bd:'#fecaca',crit:true,
+   al:{t:'c',m:'CRITICAL: Transfer ONLY works during initial iPhone setup. Skipping = factory reset required.'},
+   items:['Settings → Chats → Chat Backup → "Back Up" done','Google Drive backup confirmed','"Move to iOS" installed on Android','iPhone is fresh/reset','WhatsApp transfer completed during setup','Chats visible on iPhone','Media & voice notes restored']},
+  {id:'em',title:'Email accounts',e:'📧',bg:'#eff6ff',bd:'#bfdbfe',
+   items:['Gmail personal — recovery verified','Gmail personal — added to iPhone','College Outlook — recovery verified','College Outlook — added to iPhone','Yahoo backup — verified & added']},
+  {id:'pw',title:'Passwords',e:'🔑',bg:'#fffbeb',bd:'#fde68a',
+   al:{t:'w',m:'Easiest: keep Chrome sync ON → sign into Chrome on iPhone → passwords auto-restore.'},
+   items:['Chrome sync ON or passwords exported','Google recovery verified','Apple ID created & recovery set','Banking credentials saved','College portal credentials noted']},
+  {id:'otp',title:'Authenticator & OTP',e:'🔐',bg:'#fef2f2',bd:'#fecaca',crit:true,
+   al:{t:'c',m:'CRITICAL: Transfer BEFORE wiping anything. Losing OTP access = permanent lockout.'},
+   items:['Google Auth export QR generated on Android','Google Auth imported on iPhone','Google OTP working on iPhone','GitHub OTP working on iPhone','Banking OTP working on iPhone','Discord OTP working on iPhone']},
+  {id:'ct',title:'Contacts',e:'👤',bg:'#f0fdf4',bd:'#bbf7d0',
+   items:['Contacts visible on contacts.google.com','Google account added to iPhone','Contacts sync enabled','Important numbers spot-checked']},
+  {id:'fi',title:'Files & downloads',e:'📁',bg:'#f5f3ff',bd:'#ddd6fe',
+   items:['Downloads folder backed up','Resume backed up','Aadhaar PDF backed up','College documents backed up','Certificates backed up','WhatsApp Documents folder copied']},
+  {id:'nt',title:'Notes',e:'📝',bg:'#eff6ff',bd:'#bfdbfe',
+   items:['Google Keep synced (automatic)','Samsung Notes exported as PDF/DOCX','Exported notes uploaded to Drive','Notes accessible on iPhone']},
+  {id:'bk',title:'Banking & SIM',e:'🏦',bg:'#fef2f2',bd:'#fecaca',crit:true,
+   al:{t:'c',m:'CRITICAL: Verify SIM and UPI apps BEFORE resetting Android.'},
+   items:['SIM working — SMS receiving confirmed','UPI apps (PhonePe, GPay, Paytm) working','Aadhaar-linked number active','Banking apps set up & tested on iPhone']},
+];
+const FC=['Photos verified','Videos verified','Contacts restored','WhatsApp restored','OTP apps tested','Email accounts working','Bank apps working','Downloads copied','Notes available','SIM working','iPhone stable for 7+ days'];
+
+function ck(id,i){return id+'_'+i}
+function fck(i){return 'fc_'+i}
+
+function buildChecklist(){
+  const g=document.getElementById('cgrid');
+  SECS.forEach(sec=>{
+    const el=document.createElement('div');
+    el.className='sc'+(sec.crit?' critical':'');
+    el.id='sc_'+sec.id;
+    const tot=sec.items.length;
+    const dn=sec.items.filter((_,i)=>S[ck(sec.id,i)]).length;
+    const pct=Math.round(dn/tot*100);
+    const bc=dn===tot?'bd':dn>0?'bp':sec.crit?'bc':'bt';
+    const bt=dn===tot?'Complete':dn>0?`${dn}/${tot}`:sec.crit?'Critical':'Pending';
+    el.innerHTML=`
+    <div class="sch" onclick="toggleSec('${sec.id}')">
+      <div class="sico" style="background:${sec.bg};border:1px solid ${sec.bd}">${sec.e}</div>
+      <div class="sinf"><div class="sname">${sec.title}</div><div class="sprog">${dn} of ${tot} tasks</div></div>
+      <span class="badge ${bc}" id="sb_${sec.id}">${bt}</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="mbar"><div class="mbfill" id="mb_${sec.id}" style="width:${pct}%"></div></div>
+    <div class="sbody" id="sb_body_${sec.id}">
+      ${sec.al?`<div class="abox ${sec.al.t==='c'?'ac':'aw'}"><span>${sec.al.t==='c'?'🚨':'⚠️'}</span><span>${sec.al.m}</span></div>`:''}
+      ${sec.items.map((item,i)=>{const ch=!!S[ck(sec.id,i)];return`<div class="ci${ch?' done':''}" id="ci_${sec.id}_${i}"><input type="checkbox" id="cb_${sec.id}_${i}" ${ch?'checked':''} onchange="toggle('${sec.id}',${i})"><label for="cb_${sec.id}_${i}">${item}</label></div>`}).join('')}
+    </div>`;
+    g.appendChild(el);
+  });
+}
+
+function buildFC(){
+  const g=document.getElementById('fcg');
+  FC.forEach((lbl,i)=>{
+    const ch=!!S[fck(i)];const d=document.createElement('div');
+    d.className='fci'+(ch?' done':'');d.id='fci_'+i;
+    d.innerHTML=`<input type="checkbox" id="fcc_${i}" ${ch?'checked':''} onchange="toggleFC(${i})"><label for="fcc_${i}">${lbl}</label>`;
+    g.appendChild(d);
+  });
+}
+
+function toggle(id,i){const k=ck(id,i);S[k]=!S[k];const r=document.getElementById(`ci_${id}_${i}`);S[k]?r.classList.add('done'):r.classList.remove('done');updSec(id);updGlobal();persist()}
+function toggleFC(i){const k=fck(i);S[k]=!S[k];const w=document.getElementById('fci_'+i);S[k]?w.classList.add('done'):w.classList.remove('done');updFmt();persist()}
+function toggleSec(id){document.getElementById('sc_'+id).classList.toggle('open')}
+function expandAll(){SECS.forEach(s=>document.getElementById('sc_'+s.id).classList.add('open'))}
+
+function updSec(id){
+  const sec=SECS.find(s=>s.id===id);const tot=sec.items.length;
+  const dn=sec.items.filter((_,i)=>S[ck(id,i)]).length;
+  const pct=Math.round(dn/tot*100);
+  document.getElementById('mb_'+id).style.width=pct+'%';
+  document.querySelector(`#sc_${id} .sprog`).textContent=`${dn} of ${tot} tasks`;
+  const b=document.getElementById('sb_'+id);
+  b.className='badge '+(dn===tot?'bd':dn>0?'bp':sec.crit?'bc':'bt');
+  b.textContent=dn===tot?'Complete':dn>0?`${dn}/${tot}`:sec.crit?'Critical':'Pending';
+}
+
+function updGlobal(){
+  let tot=0,dn=0,sd=0;
+  SECS.forEach(s=>{tot+=s.items.length;const d=s.items.filter((_,i)=>S[ck(s.id,i)]).length;dn+=d;if(d===s.items.length)sd++});
+  const pct=tot?Math.round(dn/tot*100):0;
+  document.getElementById('gfill').style.width=pct+'%';
+  document.getElementById('pct-stat').textContent=pct+'%';
+  document.getElementById('glabel').textContent=`${dn} of ${tot} tasks complete`;
+  document.getElementById('secs-stat').textContent=`${sd} / ${SECS.length}`;
+  document.getElementById('left-stat').textContent=tot-dn;
+  document.getElementById('ms-done').textContent=dn;
+  document.getElementById('ms-left').textContent=tot-dn;
+  updFmt();
+}
+
+function updFmt(){
+  const fcDn=FC.filter((_,i)=>S[fck(i)]).length;
+  const allDn=SECS.every(s=>s.items.every((_,i)=>S[ck(s.id,i)]));
+  const el=document.getElementById('fstatus');
+  if(allDn&&fcDn===FC.length){el.className='fstatus ready';el.textContent='✅ All checks passed — safe to format Android!'}
+  else{el.className='fstatus';el.textContent=`⚠️ ${FC.length-fcDn} final check(s) remaining. Complete all sections first.`}
+}
+
+// ── EMAIL VAULT ────────────────────────────────────────────────
+function gEM(){return S.emails||[]}
+function sEM(a){S.emails=a;persist()}
+
+function renderEmails(){
+  const a=gEM();const tb=document.getElementById('em-tbody');const b=document.getElementById('em-badge');
+  b.textContent=a.length+' saved';b.className='badge '+(a.length?'bd':'bt');
+  if(!a.length){tb.innerHTML='<tr class="erow"><td colspan="7">No emails added yet — use the form below.</td></tr>';return}
+  tb.innerHTML=a.map((e,i)=>`<tr>
+    <td style="font-weight:500">${x(e.label)}</td>
+    <td><div class="pwdf"><span style="font-family:var(--mono);font-size:12px">${x(e.email)}</span><button class="cpb" onclick="cp('${x(e.email)}',this)">Copy</button></div></td>
+    <td><div class="pwdf"><span class="pwdt" id="ep_${i}">••••••••</span><button class="eye" onclick="tp('ep_${i}','${btoa(unescape(encodeURIComponent(e.pwd||'')))}')">👁</button><button class="cpb" onclick="cp('${x(e.pwd)}',this)">Copy</button></div></td>
+    <td style="font-size:12px;color:var(--text2)">${x(e.rec||'—')}</td>
+    <td><span class="ctag tag-${e.type}">${e.type}</span></td>
+    <td class="ncell" title="${x(e.notes||'')}">${x(e.notes||'—')}</td>
+    <td><button class="dlb" onclick="delEM(${i})">×</button></td>
+  </tr>`).join('');
+}
+
+function addEmail(){
+  const lbl=document.getElementById('em-label').value.trim();
+  const em=document.getElementById('em-email').value.trim();
+  const pwd=document.getElementById('em-pwd').value.trim();
+  const rec=document.getElementById('em-rec').value.trim();
+  const type=document.getElementById('em-type').value;
+  const notes=document.getElementById('em-notes').value.trim();
+  if(!lbl||!em){alert('Label and email address are required.');return}
+  const a=gEM();a.push({label:lbl,email:em,pwd,rec,type,notes});sEM(a);renderEmails();
+  ['em-label','em-email','em-pwd','em-rec','em-notes'].forEach(id=>document.getElementById(id).value='');
+}
+function delEM(i){if(!confirm('Remove this email?'))return;const a=gEM();a.splice(i,1);sEM(a);renderEmails()}
+
+// ── APP VAULT ─────────────────────────────────────────────────
+function gAP(){return S.apps||[]}
+function sAP(a){S.apps=a;persist()}
+
+function renderApps(){
+  const a=gAP();const tb=document.getElementById('ap-tbody');const b=document.getElementById('ap-badge');
+  b.textContent=a.length+' saved';b.className='badge '+(a.length?'bd':'bt');
+  if(!a.length){tb.innerHTML='<tr class="erow"><td colspan="7">No apps added yet — use the form below.</td></tr>';return}
+  const sm={pending:'⬜ Not installed',installed:'✅ Installed',loggedin:'✅ Logged in'};
+  const sc={pending:'var(--text3)',installed:'var(--green)',loggedin:'var(--green)'};
+  tb.innerHTML=a.map((ap,i)=>`<tr>
+    <td style="font-weight:500">${x(ap.name)}</td>
+    <td><div class="pwdf"><span style="font-family:var(--mono);font-size:12px">${x(ap.login)}</span><button class="cpb" onclick="cp('${x(ap.login)}',this)">Copy</button></div></td>
+    <td><div class="pwdf"><span class="pwdt" id="aap_${i}">••••••••</span><button class="eye" onclick="tp('aap_${i}','${btoa(unescape(encodeURIComponent(ap.pwd||'')))}')">👁</button><button class="cpb" onclick="cp('${x(ap.pwd)}',this)">Copy</button></div></td>
+    <td><span class="ctag tag-${ap.cat}">${ap.cat}</span></td>
+    <td style="font-size:12px;color:${sc[ap.status]}">${sm[ap.status]}</td>
+    <td class="ncell" title="${x(ap.notes||'')}">${x(ap.notes||'—')}</td>
+    <td><button class="dlb" onclick="delAP(${i})">×</button></td>
+  </tr>`).join('');
+}
+
+function addApp(){
+  const name=document.getElementById('ap-name').value.trim();
+  const login=document.getElementById('ap-login').value.trim();
+  const pwd=document.getElementById('ap-pwd').value.trim();
+  const cat=document.getElementById('ap-cat').value;
+  const status=document.getElementById('ap-status').value;
+  const notes=document.getElementById('ap-notes').value.trim();
+  if(!name||!login){alert('App name and login are required.');return}
+  const a=gAP();a.push({name,login,pwd,cat,status,notes});sAP(a);renderApps();
+  ['ap-name','ap-login','ap-pwd','ap-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ap-status').value='pending';
+}
+function delAP(i){if(!confirm('Remove this app entry?'))return;const a=gAP();a.splice(i,1);sAP(a);renderApps()}
+
+// ── SCREENSHOTS ────────────────────────────────────────────────
+let pendImg=null;
+function gSS(){return S.shots||[]}
+function sSS(a){S.shots=a;persist()}
+
+function handleFiles(e){const f=e.target.files[0];if(f)readImg(f);e.target.value=''}
+function readImg(f){
+  const r=new FileReader();
+  r.onload=e=>{pendImg=e.target.result;document.getElementById('ss-title').value=f.name.replace(/\.[^.]+$/,'');document.getElementById('ss-meta').classList.add('show');document.getElementById('ss-title').focus()};
+  r.readAsDataURL(f);
+}
+function saveShot(){
+  if(!pendImg){alert('No image.');return}
+  const title=document.getElementById('ss-title').value.trim()||'Screenshot';
+  const note=document.getElementById('ss-note').value.trim();
+  const a=gSS();a.push({title,note,data:pendImg,ts:Date.now()});sSS(a);renderShots();
+  pendImg=null;document.getElementById('ss-title').value='';document.getElementById('ss-note').value='';document.getElementById('ss-meta').classList.remove('show');
+}
+function delShot(i){if(!confirm('Delete screenshot?'))return;const a=gSS();a.splice(i,1);sSS(a);renderShots()}
+function renderShots(){
+  const a=gSS();const g=document.getElementById('ss-grid');
+  document.getElementById('ss-count').textContent=a.length+' screenshot'+(a.length!==1?'s':'');
+  if(!a.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--rl);background:var(--bg2);margin-top:8px">No screenshots yet — upload one above.</div>';return}
+  g.innerHTML=a.map((s,i)=>`<div class="sscard"><img src="${s.data}" alt="${x(s.title)}" onclick="openLB(${i})"><button class="ssdel" onclick="delShot(${i})">✕</button><div class="sscbody"><div class="sscname">${x(s.title)}</div>${s.note?`<div class="sscnote">${x(s.note)}</div>`:''}</div></div>`).join('');
+}
+function dov(e){e.preventDefault();document.getElementById('dropzone').classList.add('drag')}
+function dol(){document.getElementById('dropzone').classList.remove('drag')}
+function dod(e){e.preventDefault();dol();const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))readImg(f)}
+
+// LIGHTBOX
+function openLB(i){document.getElementById('lb-img').src=gSS()[i].data;document.getElementById('lb').classList.add('show')}
+function closeLB(){document.getElementById('lb').classList.remove('show')}
+
+// UTILS
+function x(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function tp(id,b64){const el=document.getElementById(id);const real=decodeURIComponent(escape(atob(b64)));el.classList.toggle('rev');el.textContent=el.classList.contains('rev')?real:'••••••••'}
+function cp(text,btn){
+  navigator.clipboard.writeText(text).then(ok,()=>{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);ok()});
+  function ok(){btn.classList.add('ok');btn.textContent='Copied!';setTimeout(()=>{btn.classList.remove('ok');btn.textContent='Copy'},1500)}
+}
+function resetAll(){if(!confirm('Reset ALL data including credentials and screenshots? This cannot be undone.'))return;localStorage.removeItem(SK);location.reload()}
+
+// SYNC
+function copyExport(btn){
+  const text = document.getElementById('export-ta').value;
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(ok,()=>{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);ok()});
+  function ok(){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy Data'},2000)}
+}
+function importData(){
+  const text = document.getElementById('import-ta').value.trim();
+  if(!text) return alert('Please paste data first.');
+  if(!confirm('This will OVERWRITE all existing data. Continue?')) return;
+  try {
+    let parsed;
+    if(text.startsWith('{')) parsed = JSON.parse(text);
+    else parsed = JSON.parse(decodeURIComponent(escape(atob(text))));
+    if(typeof parsed === 'object' && parsed !== null) {
+      S = parsed;
+      persist();
+      alert('Data imported successfully! Reloading...');
+      location.reload();
+    } else {
+      alert('Invalid data format.');
+    }
+  } catch(e) {
+    alert('Failed to parse data. Make sure you copied the entire text. Error: ' + e.message);
+  }
+}
+
+// INIT
+load();buildChecklist();buildFC();SECS.forEach(s=>updSec(s.id));updGlobal();renderEmails();renderApps();renderShots();
+</script>
+</body>
+</html>
